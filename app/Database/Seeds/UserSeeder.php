@@ -12,9 +12,10 @@ class UserSeeder extends Seeder
             'name' => 'Administrator',
             'email' => 'admin@mail.com',
             'password' => password_hash('P@ssw0rd', PASSWORD_DEFAULT),
-            'status' => 'active',
             'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
             'created_by' => 1,
+            'updated_by' => 1,
         ]);
     }
 }

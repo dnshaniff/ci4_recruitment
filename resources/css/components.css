@@ -1,0 +1,103 @@
+.brand-logo {
+  width: 55px;
+  height: 55px;
+
+  border-radius: 18px;
+
+  background: #0f172a;
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: bold;
+  font-size: 22px;
+}
+
+.user-avatar {
+  width: 45px;
+  height: 45px;
+
+  border-radius: 50%;
+
+  background: #0f172a;
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: bold;
+}
+
+.card-icon {
+  width: 70px;
+  height: 70px;
+
+  border-radius: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 32px;
+}
+
+.custom-form-control {
+  height: 58px;
+
+  border-radius: 16px;
+
+  border: 1px solid #dbe1ea;
+
+  padding: 10px 18px;
+
+  font-size: 15px;
+}
+
+.custom-form-control:focus {
+  box-shadow: none;
+  border-color: #0f172a;
+}
+
+.btn {
+  border-radius: 16px;
+  font-weight: 600;
+}
+
+.sidebar-logout {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 14px 18px;
+
+  border-radius: 16px;
+
+  text-decoration: none;
+
+  background: #fee2e2;
+  color: #dc2626;
+
+  font-weight: 600;
+
+  transition: 0.2s ease;
+}
+
+.sidebar-logout:hover {
+  background: #dc2626;
+  color: white;
+
+  transform: translateY(-1px);
+}
+
+.sidebar-logout i {
+  font-size: 22px;
+}
+
+.table-deleted td {
+  background-color: rgba(221, 29, 49, 0.08) !important;
+}

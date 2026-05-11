@@ -1,0 +1,10 @@
+@import "bootstrap/dist/css/bootstrap.min.css";
+@import "datatables.net-bs5/css/dataTables.bootstrap5.min.css";
+@import "datatables.net-buttons-bs5/css/buttons.bootstrap5.min.css";
+@import "notyf/notyf.min.css";
+@import "sweetalert2/dist/sweetalert2.min.css";
+
+@import "./auth.css";
+@import "./layout.css";
+@import "./dashboard.css";
+@import "./components.css";

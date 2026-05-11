@@ -28,11 +28,6 @@ class Users extends Migration
                 'type'       => 'VARCHAR',
                 'constraint' => 255,
             ],
-            'status' => [
-                'type'       => 'ENUM',
-                'constraint' => ['active', 'inactive'],
-                'default'    => 'active',
-            ],
             'created_at' => [
                 'type' => 'DATETIME',
                 'null' => true,

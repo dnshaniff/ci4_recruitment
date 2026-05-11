@@ -1,0 +1,39 @@
+{
+  "name": "ci4_recruitment",
+  "version": "1.0.0",
+  "description": "CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure. More information can be found at the [official site](https://codeigniter.com).",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dnshaniff/ci4_recruitment.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/dnshaniff/ci4_recruitment/issues"
+  },
+  "homepage": "https://github.com/dnshaniff/ci4_recruitment#readme",
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "bootstrap": "^5.3.8",
+    "boxicons": "^2.1.4",
+    "datatables.net-bs5": "^2.3.8",
+    "datatables.net-buttons-bs5": "^3.2.6",
+    "jquery": "^4.0.0",
+    "notyf": "^3.10.0",
+    "sweetalert2": "^11.26.24"
+  },
+  "devDependencies": {
+    "vite": "^8.0.12"
+  }
+}

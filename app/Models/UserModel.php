@@ -16,7 +16,6 @@ class UserModel extends Model
         'name',
         'email',
         'password',
-        'status',
         'created_by',
         'updated_by',
         'deleted_by'
@@ -30,4 +29,31 @@ class UserModel extends Model
     protected $createdField  = 'created_at';
     protected $updatedField  = 'updated_at';
     protected $deletedField  = 'deleted_at';
+
+    public function datatable()
+    {
+        return $this->builder()
+            ->select("
+            users.*,
+
+            creator.name AS creator,
+            editor.name AS editor,
+            deleter.name AS deleter
+        ")
+            ->join(
+                'users AS creator',
+                'creator.id = users.created_by',
+                'left'
+            )
+            ->join(
+                'users AS editor',
+                'editor.id = users.updated_by',
+                'left'
+            )
+            ->join(
+                'users AS deleter',
+                'deleter.id = users.deleted_by',
+                'left'
+            );
+    }
 }
