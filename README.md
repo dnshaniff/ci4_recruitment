@@ -6,7 +6,6 @@ Recruitment test project built using:
 - MySQL
 - Vite
 - Bootstrap 5
-- DataTables v2
 - jQuery
 
 ---
