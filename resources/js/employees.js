@@ -403,7 +403,7 @@ document.addEventListener("DOMContentLoaded", function () {
     $(".form-select").removeClass("is-invalid");
     $(".invalid-feedback").text("");
 
-    originalPhoto = "https://placehold.co/600x400?text=No+Image";
+    photoPreview.src = "https://placehold.co/600x400?text=No+Image";
   });
 
   $(document).on("click", ".delete-record", function () {
