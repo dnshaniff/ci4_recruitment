@@ -1,8 +1,6 @@
 <?php if (session()->getFlashdata('error')) : ?>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-
             const notyf = new Notyf({
                 duration: 4000,
                 position: {
@@ -19,10 +17,8 @@
 <?php endif; ?>
 
 <?php if (session()->getFlashdata('success')) : ?>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-
             const notyf = new Notyf({
                 duration: 4000,
                 position: {

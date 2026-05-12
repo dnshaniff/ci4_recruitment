@@ -4,6 +4,9 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\UserModel;
+use Config\Database;
+use Exception;
+use Throwable;
 
 class UserController extends BaseController
 {
@@ -16,9 +19,7 @@ class UserController extends BaseController
 
     public function index()
     {
-        return view('users/index', [
-            'title' => 'User Management',
-        ]);
+        return view('users/index', ['title' => 'User Management']);
     }
 
     public function datatable()
@@ -104,10 +105,12 @@ class UserController extends BaseController
                 ],
             ],
             'password' => [
-                'rules' => 'required|min_length[8]',
+                'rules' => 'required|min_length[8]|regex_match[/^(?=.*[a-z])(?=.*[A-Z]).+$/]',
                 'errors' => [
                     'required' => 'Password is required',
                     'min_length' => 'Password minimum 8 characters',
+                    'regex_match' =>
+                    'Password must contain uppercase and lowercase letters',
                 ],
             ],
         ];
@@ -116,15 +119,33 @@ class UserController extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Validation failed', 'errors' => $this->validator->getErrors()])->setStatusCode(422);
         }
 
-        $this->userModel->insert([
-            'name' => $this->request->getPost('name'),
-            'email' => $this->request->getPost('email'),
-            'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'created_by' => auth_user()['id'],
-            'updated_by' => auth_user()['id'],
-        ]);
+        $db = Database::connect();
 
-        return $this->response->setJSON(['status' => 'success', 'message' => 'User created successfully'], 201);
+        try {
+            $db->transBegin();
+
+            $this->userModel->insert([
+                'name' => $this->request->getPost('name'),
+                'email' => $this->request->getPost('email'),
+                'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+                'created_by' => auth_user()['id'],
+                'updated_by' => auth_user()['id'],
+            ]);
+
+            if ($db->transStatus() === false) {
+                throw new Exception('Database transaction failed');
+            }
+
+            $db->transCommit();
+
+            return $this->response->setJSON(['status' => 'success', 'message' => 'User created successfully'])->setStatusCode(201);
+        } catch (Throwable $e) {
+            $db->transRollback();
+
+            log_message('error', $e->getMessage());
+
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to create user'])->setStatusCode(500);
+        }
     }
 
     public function show($id)
@@ -159,8 +180,7 @@ class UserController extends BaseController
                 ],
             ],
             'email' => [
-                'rules' =>
-                "required|valid_email|is_unique[users.email,id,{$id}]",
+                'rules' => "required|valid_email|is_unique[users.email,id,{$id}]",
                 'errors' => [
                     'required' => 'Email is required',
                     'valid_email' => 'Email format is invalid',
@@ -173,11 +193,10 @@ class UserController extends BaseController
 
         if (!empty($password)) {
             $rules['password'] = [
-                'rules' =>
-                'min_length[8]',
+                'rules' => 'permit_empty|min_length[8]|regex_match[/^(?=.*[a-z])(?=.*[A-Z]).+$/]',
                 'errors' => [
-                    'min_length' =>
-                    'Password minimum 8 characters',
+                    'min_length' => 'Password minimum 8 characters',
+                    'regex_match' => 'Password must contain uppercase and lowercase letters',
                 ],
             ];
         }
@@ -186,20 +205,37 @@ class UserController extends BaseController
             return $this->response->setJSON(['status' => 'error', 'message' => 'Validation failed', 'errors' => $this->validator->getErrors()])->setStatusCode(422);
         }
 
-        $data = [
-            'name' => $this->request->getPost('name'),
-            'email' => $this->request->getPost('email'),
-            'updated_by' => auth_user()['id'],
-        ];
+        $db = Database::connect();
 
-        if (!empty($password)) {
-            $data['password'] = password_hash($password, PASSWORD_DEFAULT);
+        try {
+            $db->transBegin();
+
+            $data = [
+                'name' => $this->request->getPost('name'),
+                'email' => $this->request->getPost('email'),
+                'updated_by' => auth_user()['id'],
+            ];
+
+            if (!empty($password)) {
+                $data['password'] = password_hash($password, PASSWORD_DEFAULT);
+            }
+
+            $this->userModel->update($id, $data);
+
+            if ($db->transStatus() === false) {
+                throw new Exception('Database transaction failed');
+            }
+
+            $db->transCommit();
+
+            return $this->response->setJSON(['status' => 'success', 'message' => 'User updated successfully'])->setStatusCode(200);
+        } catch (Throwable $e) {
+            $db->transRollback();
+
+            log_message('error', $e->getMessage());
+
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Failed to update user'])->setStatusCode(500);
         }
-
-        $this->userModel->update($id, $data);
-
-
-        return $this->response->setJSON(['status' => 'success', 'message' => 'User updated successfully'], 200);
     }
 
     public function delete($id)

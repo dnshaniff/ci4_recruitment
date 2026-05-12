@@ -3,24 +3,26 @@
 import { Modal } from "bootstrap";
 
 document.addEventListener("DOMContentLoaded", function () {
-  const datatableUsers = $(".datatables-users"),
-    userModalElement = document.getElementById("userModal"),
-    userModal = Modal.getOrCreateInstance(userModalElement),
-    modalTitle = $("#userModal .modal-title");
+  const datatableEmployees = $(".datatables-employees"),
+    employeeModalElement = document.getElementById("employeeModal"),
+    employeeModal = Modal.getOrCreateInstance(employeeModalElement),
+    modalTitle = $("#employeeModal .modal-title");
 
-  let dt_users;
+  let dt_employees;
 
-  if (datatableUsers.length) {
-    dt_users = new DataTable(datatableUsers, {
+  if (datatableEmployees.length) {
+    dt_employees = new DataTable(datatableEmployees, {
       processing: true,
       serverSide: true,
       ajax: {
-        url: "/users/datatable",
+        url: "/employees/datatable",
       },
       columns: [
         { data: "fake_id" },
         { data: "name" },
         { data: "email" },
+        { data: "position" },
+        { data: "gender" },
         { data: "created_at" },
         { data: "updated_at" },
         { data: "id" },
@@ -28,10 +30,10 @@ document.addEventListener("DOMContentLoaded", function () {
       columnDefs: [
         {
           orderable: false,
-          targets: [0, 1, 2, 3, 4, -1],
+          targets: [0, 1, 2, 3, 4, 5, 6, -1],
         },
         {
-          targets: 3,
+          targets: 5,
           render: function (data, type, row) {
             const options = {
               day: "2-digit",
@@ -50,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
           },
         },
         {
-          targets: 4,
+          targets: 6,
           render: function (data, type, row) {
             const options = {
               day: "2-digit",
@@ -96,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             return `
               <span class="text-nowrap">
-                <button class="btn btn-warning me-2 edit-record" data-id="${data}" data-bs-target="#userModal" data-bs-toggle="modal" data-bs-dismiss="modal">
+                <button class="btn btn-warning me-2 edit-record" data-id="${data}" data-bs-target="#employeeModal" data-bs-toggle="modal" data-bs-dismiss="modal">
                   <i class="bx bx-edit"></i>
                 </button>
                 <button class="btn btn-danger delete-record" data-id="${data}">
@@ -134,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   className: "add-new mb-3 mb-md-0",
                   attr: {
                     "data-bs-toggle": "modal",
-                    "data-bs-target": "#userModal",
+                    "data-bs-target": "#employeeModal",
                   },
                 },
               ],
@@ -155,63 +157,139 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  const userForm = document.getElementById("userForm"),
-    fillName = userForm.querySelector("#name"),
-    fillEmail = userForm.querySelector("#email"),
-    fillPassword = userForm.querySelector("#password"),
-    btnSubmit = userForm.querySelector('button[type="submit"]');
+  const employeeForm = document.getElementById("employeeForm"),
+    employeeCode = employeeForm.querySelector("#employee_code"),
+    fillName = employeeForm.querySelector("#name"),
+    fillEmail = employeeForm.querySelector("#email"),
+    fillPosition = employeeForm.querySelector("#position"),
+    selectGender = employeeForm.querySelector("#gender"),
+    uploadPhoto = employeeForm.querySelector("#photo"),
+    photoPreviewWrapper = employeeForm.querySelector("#photoPreviewWrapper"),
+    photoPreview = employeeForm.querySelector("#photoPreview"),
+    btnSubmit = employeeForm.querySelector('button[type="submit"]');
 
-  let editingId = null;
+  let editingId = null,
+    originalPhoto = "https://placehold.co/600x400?text=No+Image";
+
+  uploadPhoto.addEventListener("change", function (e) {
+    const file = e.target.files[0];
+
+    if (!file) {
+      photoPreview.src = originalPhoto;
+
+      uploadPhoto.classList.remove("is-invalid");
+
+      $(".error-photo").text("");
+
+      return;
+    }
+
+    const allowedTypes = ["image/jpeg", "image/jpg"];
+
+    if (!allowedTypes.includes(file.type)) {
+      uploadPhoto.classList.add("is-invalid");
+
+      $(".error-photo").text("Photo must be JPG/JPEG");
+
+      uploadPhoto.value = "";
+
+      photoPreview.src = originalPhoto;
+
+      return;
+    }
+
+    if (file.size > 307200) {
+      uploadPhoto.classList.add("is-invalid");
+
+      $(".error-photo").text("Photo maximum 300KB");
+
+      uploadPhoto.value = "";
+
+      photoPreview.src = originalPhoto;
+
+      return;
+    }
+
+    uploadPhoto.classList.remove("is-invalid");
+
+    $(".error-photo").text("");
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      photoPreview.src = e.target.result;
+    };
+
+    reader.readAsDataURL(file);
+  });
 
   $(".add-new").on("click", function () {
-    modalTitle.html("Create New User");
+    modalTitle.html("Create New Employee");
     editingId = null;
     $(btnSubmit).html("Submit");
   });
 
-  $(document).on("click", ".edit-record", function (e) {
-    const id = $(this).data("id"),
-      dtrModal = $(".dtr-bs-modal.show");
+  $(document).on("click", ".edit-record", function () {
+    const id = $(this).data("id");
 
-    if (dtrModal.length) {
-      dtrModal.modal("hide");
-    }
+    modalTitle.html("Edit Existing Employee");
 
-    modalTitle.html("Edit Existing User");
-    $(btnSubmit).html("Save");
+    btnSubmit.innerHTML = "Save Employee";
 
-    // get data
-    $.get(`/users/${id}`, function (data) {
+    $.get(`/employees/${id}`, function (data) {
       editingId = id;
 
+      employeeCode.value = data.employee_code || "";
       fillName.value = data.name || "";
       fillEmail.value = data.email || "";
+      fillPosition.value = data.position || "";
+      selectGender.value = data.gender || "";
+
+      if (data.photo_path) {
+        originalPhoto = `/${data.photo_path}`;
+      } else {
+        originalPhoto = "https://placehold.co/600x400?text=No+Image";
+      }
+
+      photoPreview.src = originalPhoto;
     });
   });
 
-  $(userForm).on("submit", function (e) {
+  $(employeeForm).on("submit", function (e) {
     e.preventDefault();
 
     $(".form-control").removeClass("is-invalid");
+
+    $(".form-select").removeClass("is-invalid");
 
     $(".invalid-feedback").text("");
 
     let valid = true;
 
+    const employee_code = employeeCode.value.trim();
+
     const name = fillName.value.trim();
+
     const email = fillEmail.value.trim();
-    const password = fillPassword.value.trim();
+
+    const position = fillPosition.value.trim();
+
+    const gender = selectGender.value;
+
+    const photo = uploadPhoto.files[0];
+
+    if (!employee_code) {
+      employeeCode.classList.add("is-invalid");
+
+      $(".error-employee_code").text("Employee code is required");
+
+      valid = false;
+    }
 
     if (!name) {
       fillName.classList.add("is-invalid");
 
       $(".error-name").text("Name is required");
-
-      valid = false;
-    } else if (name.length < 4) {
-      fillName.classList.add("is-invalid");
-
-      $(".error-name").text("The name must be at least 4 characters long");
 
       valid = false;
     }
@@ -228,40 +306,34 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!emailPattern.test(email)) {
         fillEmail.classList.add("is-invalid");
 
-        $(".error-email").text("The email address is not valid");
+        $(".error-email").text("Invalid email address");
 
         valid = false;
       }
     }
 
-    if (!editingId) {
-      if (!password) {
-        fillPassword.classList.add("is-invalid");
+    if (!position) {
+      fillPosition.classList.add("is-invalid");
 
-        $(".error-password").text("Password is required");
+      $(".error-position").text("Position is required");
 
-        valid = false;
-      } else if (password.length < 8) {
-        fillPassword.classList.add("is-invalid");
+      valid = false;
+    }
 
-        $(".error-password").text(
-          "The password must be at least 8 characters long",
-        );
+    if (!gender) {
+      selectGender.classList.add("is-invalid");
 
-        valid = false;
-      } else {
-        const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z]).+$/;
+      $(".error-gender").text("Gender is required");
 
-        if (!passwordPattern.test(password)) {
-          fillPassword.classList.add("is-invalid");
+      valid = false;
+    }
 
-          $(".error-password").text(
-            "Password must contain uppercase and lowercase letters",
-          );
+    if (!editingId && !photo) {
+      uploadPhoto.classList.add("is-invalid");
 
-          valid = false;
-        }
-      }
+      $(".error-photo").text("Photo is required");
+
+      valid = false;
     }
 
     if (!valid) {
@@ -271,28 +343,25 @@ document.addEventListener("DOMContentLoaded", function () {
     btnSubmit.disabled = true;
 
     btnSubmit.innerHTML = `
-        <span
-            class="spinner-border spinner-border-sm me-2">
-        </span>
-
+        <span class="spinner-border spinner-border-sm me-2"></span>
         Processing...
     `;
 
-    let url = editingId ? `/users/update/${editingId}` : `/users/store`;
+    const formData = new FormData(employeeForm);
+
+    let url = editingId ? `/employees/update/${editingId}` : `/employees/store`;
 
     $.ajax({
-      data: $(userForm).serialize(),
-
       url: url,
-
       type: "POST",
-
+      data: formData,
+      processData: false,
+      contentType: false,
       success: function (res) {
         btnSubmit.disabled = false;
-
-        dt_users.draw(false);
-
-        userModal.hide();
+        btnSubmit.innerHTML = editingId ? "Save Employee" : "Submit";
+        employeeModal.hide();
+        dt_employees.draw(false);
 
         new Notyf({
           duration: 3000,
@@ -302,14 +371,11 @@ document.addEventListener("DOMContentLoaded", function () {
           },
         }).success(res.message);
       },
-
       error: function (xhr) {
         btnSubmit.disabled = false;
-
-        btnSubmit.innerHTML = editingId ? "Save" : "Submit";
+        btnSubmit.innerHTML = editingId ? "Save Employee" : "Submit";
 
         let res = xhr.responseJSON;
-
         if (res?.errors) {
           Object.keys(res.errors).forEach((field) => {
             $(`#${field}`).addClass("is-invalid");
@@ -329,9 +395,15 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  userModalElement.addEventListener("hidden.bs.modal", function () {
-    userForm.reset();
+  employeeModalElement.addEventListener("hidden.bs.modal", function () {
+    employeeForm.reset();
     editingId = null;
+
+    $(".form-control").removeClass("is-invalid");
+    $(".form-select").removeClass("is-invalid");
+    $(".invalid-feedback").text("");
+
+    originalPhoto = "https://placehold.co/600x400?text=No+Image";
   });
 
   $(document).on("click", ".delete-record", function () {
@@ -339,21 +411,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     Swal.fire({
       title: "Are you sure?",
-
       text: "This user will be moved to trash",
-
       icon: "warning",
-
       showCancelButton: true,
-
       confirmButtonText: "Yes, delete it!",
-
       customClass: {
         confirmButton: "btn btn-danger me-2",
-
         cancelButton: "btn btn-light",
       },
-
       buttonsStyling: false,
     }).then((result) => {
       if (!result.isConfirmed) {
@@ -361,12 +426,10 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       $.ajax({
-        url: `/users/delete/${id}`,
-
+        url: `/employees/delete/${id}`,
         type: "DELETE",
-
         success: function (res) {
-          dt_users.draw(false);
+          dt_employees.draw(false);
 
           new Notyf({
             duration: 3000,
@@ -376,7 +439,6 @@ document.addEventListener("DOMContentLoaded", function () {
             },
           }).success(res.message);
         },
-
         error: function (xhr) {
           new Notyf({
             duration: 3000,
@@ -395,19 +457,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     Swal.fire({
       title: "Restore user?",
-
       icon: "question",
-
       showCancelButton: true,
-
       confirmButtonText: "Restore",
-
       customClass: {
         confirmButton: "btn btn-success me-2",
-
         cancelButton: "btn btn-light",
       },
-
       buttonsStyling: false,
     }).then((result) => {
       if (!result.isConfirmed) {
@@ -415,12 +471,10 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       $.ajax({
-        url: `/users/restore/${id}`,
-
+        url: `/employees/restore/${id}`,
         type: "POST",
-
         success: function (res) {
-          dt_users.draw(false);
+          dt_employees.draw(false);
 
           new Notyf({
             duration: 3000,
@@ -430,7 +484,6 @@ document.addEventListener("DOMContentLoaded", function () {
             },
           }).success(res.message);
         },
-
         error: function (xhr) {
           new Notyf({
             duration: 3000,
@@ -449,21 +502,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     Swal.fire({
       title: "Permanent delete?",
-
       text: "This action cannot be undone",
-
       icon: "warning",
-
       showCancelButton: true,
-
       confirmButtonText: "Permanent Delete",
-
       customClass: {
         confirmButton: "btn btn-danger me-2",
-
         cancelButton: "btn btn-light",
       },
-
       buttonsStyling: false,
     }).then((result) => {
       if (!result.isConfirmed) {
@@ -471,12 +517,10 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       $.ajax({
-        url: `/users/force/${id}`,
-
+        url: `/employees/force/${id}`,
         type: "DELETE",
-
         success: function (res) {
-          dt_users.draw(false);
+          dt_employees.draw(false);
 
           new Notyf({
             duration: 3000,
@@ -486,7 +530,6 @@ document.addEventListener("DOMContentLoaded", function () {
             },
           }).success(res.message);
         },
-
         error: function (xhr) {
           new Notyf({
             duration: 3000,

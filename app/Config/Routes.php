@@ -34,4 +34,22 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
 
         $routes->delete('force/(:num)', 'UserController::force/$1');
     });
+
+    $routes->group('employees', function ($routes) {
+        $routes->get('/', 'EmployeeController::index');
+
+        $routes->get('datatable', 'EmployeeController::datatable');
+
+        $routes->post('store', 'EmployeeController::store');
+
+        $routes->get('(:num)', 'EmployeeController::show/$1');
+
+        $routes->post('update/(:num)', 'EmployeeController::update/$1');
+
+        $routes->delete('delete/(:num)', 'EmployeeController::delete/$1');
+
+        $routes->post('restore/(:num)', 'EmployeeController::restore/$1');
+
+        $routes->delete('force/(:num)', 'EmployeeController::force/$1');
+    });
 });

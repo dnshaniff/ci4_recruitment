@@ -10,6 +10,7 @@ export default defineConfig({
       input: {
         app: "resources/js/app.js",
         users: "resources/js/users.js",
+        employees: "resources/js/employees.js",
       },
     },
     manifest: true,
